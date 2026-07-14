@@ -8,8 +8,15 @@ from docx import Document as DocxDocument
 from pypdf import PdfReader
 
 app = Flask(__name__)
-DB_PATH = os.path.join(os.path.dirname(__file__), "todo.db")
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+
+# Vercel's deployment filesystem is read-only except for /tmp, and each
+# serverless invocation may get a fresh /tmp — so data here is NOT permanent
+# on Vercel. Locally (or on a normal server) it behaves like a real file.
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+DATA_DIR = "/tmp" if IS_VERCEL else os.path.dirname(__file__)
+
+DB_PATH = os.path.join(DATA_DIR, "todo.db")
+UPLOAD_DIR = os.path.join(DATA_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED_EXTENSIONS = {"pdf", "docx"}
 
@@ -182,6 +189,7 @@ def delete_task(task_id):
     return redirect(url_for("index"))
 
 
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True, host="0.0.0.0", port=5000)
