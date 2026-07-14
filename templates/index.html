@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daybook — Todo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f4ee;
+    --paper-deep: #efece2;
+    --ink: #24222c;
+    --ink-soft: #6f6c7c;
+    --violet: #5b4de0;
+    --violet-deep: #3f31b8;
+    --clay: #e8734a;
+    --moss: #1f9d78;
+    --amber: #e8a23a;
+    --card: #ffffff;
+    --line: #e4e0d4;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 10% -10%, #efe9ff 0%, transparent 45%),
+      radial-gradient(circle at 100% 0%, #ffe9dd 0%, transparent 40%),
+      var(--paper);
+    min-height: 100vh;
+    padding: 48px 16px 80px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  .masthead { margin-bottom: 28px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet-deep);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 6px; height: 6px;
+    background: var(--clay);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.6); opacity: 0.5; }
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: -0.01em;
+    margin: 6px 0 4px;
+  }
+  .subtitle { color: var(--ink-soft); font-size: 14.5px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(36,34,44,0.02);
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
+  form.add-form { display: flex; gap: 8px; flex-wrap: wrap; }
+  form.add-form input[type="text"] {
+    flex: 1 1 220px;
+    padding: 13px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-family: inherit;
+    background: var(--paper);
+    transition: border-color .15s ease;
+  }
+  form.add-form input[type="text"]:focus {
+    outline: none;
+    border-color: var(--violet);
+  }
+  form.add-form input[type="date"], form.add-form input[type="time"] {
+    padding: 13px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    background: var(--paper);
+  }
+  form.add-form button, .upload-form button {
+    padding: 13px 20px;
+    background: var(--violet);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .12s ease, background .15s ease;
+  }
+  form.add-form button:hover, .upload-form button:hover {
+    background: var(--violet-deep);
+    transform: translateY(-1px);
+  }
+  form.add-form button:active, .upload-form button:active { transform: translateY(0); }
+
+  .upload-box {
+    background: linear-gradient(180deg, #fbfaf6, var(--paper));
+    border: 1.5px dashed #cfc7e8;
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .upload-title { font-weight: 600; font-size: 14.5px; margin-bottom: 3px; }
+  .upload-hint { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 12px; }
+  .upload-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .upload-form input[type="file"] {
+    flex: 1 1 200px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  .upload-form input[type="date"], .upload-form input[type="time"] {
+    padding: 11px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    font-size: 13px;
+    background: #fff;
+  }
+  .upload-form button { padding: 11px 18px; background: var(--moss); }
+  .upload-form button:hover { background: #167a5c; }
+
+  /* --- stats / charts --- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+  .stat-panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .stat-panel .chart-canvas-wrap { position: relative; width: 130px; height: 130px; }
+  .stat-panel canvas { max-width: 100%; }
+  .big-pct {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--violet-deep);
+    pointer-events: none;
+  }
+  .stat-panel-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-top: 10px;
+  }
+  .bar-chart-wrap { width: 100%; height: 140px; }
+  .legend-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+  }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+  .dot.done { background: var(--moss); }
+  .dot.pending { background: var(--amber); }
+
+  /* --- task list --- */
+  ul { list-style: none; padding: 0; margin: 0; }
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    transition: background .3s ease;
+    border-radius: 10px;
+  }
+  li:last-child { border-bottom: none; }
+  .task-info { display: flex; flex-direction: column; min-width: 0; }
+  .task-text {
+    font-size: 15px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+  .task-text.done {
+    text-decoration: line-through;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+  .task-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+  .actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .actions button {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 13px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .actions button:hover { filter: brightness(0.95); }
+  .actions button:active { transform: scale(0.94); }
+  .btn-done { background: #e2f6ec; color: var(--moss); }
+  .btn-done.undo { background: #eeecf7; color: var(--ink-soft); }
+  .btn-delete { background: #fdeae6; color: #c1502f; }
+  .empty { color: var(--ink-soft); font-size: 14px; text-align: center; padding: 26px 0; }
+
+  /* --- celebration animation on a just-completed task --- */
+  li.just-done {
+    animation: flash-bg 1.1s ease;
+    position: relative;
+  }
+  @keyframes flash-bg {
+    0% { background: #d9f5e6; }
+    100% { background: transparent; }
+  }
+  li.just-done .task-text { animation: strike-pop .4s ease; }
+  @keyframes strike-pop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .confetti-burst {
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    width: 0; height: 0;
+    pointer-events: none;
+  }
+  .confetti-burst span {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: confetti-fly 0.9s ease-out forwards;
+  }
+  @keyframes confetti-fly {
+    0% { opacity: 1; transform: translate(0,0) rotate(0deg); }
+    100% { opacity: 0; transform: var(--fly) rotate(300deg); }
+  }
+
+  /* --- clear, dedicated celebration banner --- */
+  .celebrate-toast {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translate(-50%, -140%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, var(--moss), #12836a);
+    color: #fff;
+    padding: 14px 22px 14px 16px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(31,157,120,0.35);
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .celebrate-toast.show {
+    animation: toast-in-out 2.6s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes toast-in-out {
+    0%   { transform: translate(-50%, -140%); opacity: 0; }
+    12%  { transform: translate(-50%, 0%); opacity: 1; }
+    82%  { transform: translate(-50%, 0%); opacity: 1; }
+    100% { transform: translate(-50%, -140%); opacity: 0; }
+  }
+  .celebrate-check {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .check-circle {
+    stroke-dasharray: 151;
+    stroke-dashoffset: 151;
+  }
+  .check-mark {
+    stroke-dasharray: 36;
+    stroke-dashoffset: 36;
+  }
+  .celebrate-toast.show .check-circle {
+    animation: draw-circle 0.5s ease forwards 0.25s;
+  }
+  .celebrate-toast.show .check-mark {
+    animation: draw-check 0.35s ease forwards 0.65s;
+  }
+  @keyframes draw-circle { to { stroke-dashoffset: 0; } }
+  @keyframes draw-check { to { stroke-dashoffset: 0; } }
+  .celebrate-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+  .celebrate-sub {
+    font-size: 12.5px;
+    opacity: 0.9;
+  }
+</style>
+</head>
+<body>
+  <div id="celebrateToast" class="celebrate-toast">
+    <div class="celebrate-check">
+      <svg viewBox="0 0 52 52" width="30" height="30">
+        <circle class="check-circle" cx="26" cy="26" r="24" fill="none" stroke="#ffffff" stroke-width="3"/>
+        <path class="check-mark" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M14 27l8 8 16-16"/>
+      </svg>
+    </div>
+    <div class="celebrate-text">
+      <div class="celebrate-title">Nice work!</div>
+      <div class="celebrate-sub">Task marked complete</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="masthead">
+      <div class="eyebrow">Today's Daybook</div>
+      <h1>Your task list</h1>
+      <div class="subtitle">Add tasks, upload a schedule, and watch the pile shrink.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Add a task</div>
+      <form class="add-form" action="{{ url_for('add_task') }}" method="post">
+        <input type="text" name="text" placeholder="What do you need to do?" required>
+        <input type="date" name="due_date" value="{{ tomorrow }}" min="{{ today }}">
+        <input type="time" name="due_time">
+        <button type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="upload-box">
+        <div class="upload-title">📄 Upload a schedule (PDF or Word)</div>
+        <div class="upload-hint">Each line in the file becomes its own task, due date defaults to tomorrow.</div>
+        <form class="upload-form" action="{{ url_for('upload_schedule') }}" method="post" enctype="multipart/form-data">
+          <input type="file" name="schedule_file" accept=".pdf,.docx" required>
+          <input type="date" name="upload_due_date" value="{{ tomorrow }}" min="{{ today }}">
+          <input type="time" name="upload_due_time">
+          <button type="submit">Generate tasks</button>
+        </form>
+      </div>
+    </div>
+
+    {% if total > 0 %}
+    <div class="card">
+      <div class="section-label">Progress</div>
+      <div class="stats-grid">
+        <div class="stat-panel">
+          <div class="chart-canvas-wrap">
+            <canvas id="pieChart"></canvas>
+            <div class="big-pct">{{ done_pct }}%</div>
+          </div>
+          <div class="stat-panel-title">Completion share</div>
+        </div>
+        <div class="stat-panel">
+          <div class="bar-chart-wrap">
+            <canvas id="barChart"></canvas>
+          </div>
+          <div class="stat-panel-title">Done vs pending</div>
+        </div>
+      </div>
+      <div class="legend-row">
+        <div><span class="dot done"></span>Complete: {{ done_pct }}% ({{ done_count }}/{{ total }})</div>
+        <div><span class="dot pending"></span>Pending: {{ pending_pct }}% ({{ pending_count }}/{{ total }})</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="section-label">Task list</div>
+      {% if tasks|length == 0 %}
+        <p class="empty">No tasks yet. Add one above, or upload a schedule file.</p>
+      {% else %}
+        <ul>
+          {% for task in tasks %}
+            <li data-task-id="{{ task['id'] }}" {% if celebrate_id == task['id'] %}class="just-done"{% endif %}>
+              <div class="task-info">
+                <span class="task-text {% if task['done'] %}done{% endif %}">{{ task['text'] }}</span>
+                <span class="task-date">Due {{ task['due_date'] }}{% if task['due_time'] %} · {{ task['due_time'] }}{% endif %}</span>
+              </div>
+              <div class="actions">
+                <form action="{{ url_for('mark_done', task_id=task['id']) }}" method="post">
+                  <button type="submit" class="btn-done {% if task['done'] %}undo{% endif %}">
+                    {% if task['done'] %}Undo{% else %}Done{% endif %}
+                  </button>
+                </form>
+                <form action="{{ url_for('delete_task', task_id=task['id']) }}" method="post">
+                  <button type="submit" class="btn-delete">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+
+<script src="{{ url_for('static', filename='chart.umd.js') }}"></script>
+<script>
+  {% if total > 0 %}
+  Chart.defaults.font.family = "'Inter', sans-serif";
+
+  new Chart(document.getElementById('pieChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Complete', 'Pending'],
+      datasets: [{
+        data: [{{ done_pct }}, {{ pending_pct }}],
+        backgroundColor: ['#1f9d78', '#e8a23a'],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      cutout: '68%',
+      animation: { animateRotate: true, duration: 900, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (c) => c.label + ': ' + c.parsed + '%' } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('barChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Done', 'Pending'],
+      datasets: [{
+        data: [{{ done_count }}, {{ pending_count }}],
+        backgroundColor: ['#1f9d78', '#e8a23a'],
+        borderRadius: 8,
+        maxBarThickness: 46
+      }]
+    },
+    options: {
+      animation: { duration: 800, easing: 'easeOutBack' },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#eee' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+  {% endif %}
+
+  // celebrate the just-completed task: prominent toast banner + confetti burst on the row
+  (function () {
+    const celebrated = document.querySelector('li.just-done');
+    if (celebrated) {
+      const toast = document.getElementById('celebrateToast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2700);
+
+      const burst = document.createElement('div');
+      burst.className = 'confetti-burst';
+      const colors = ['#1f9d78', '#5b4de0', '#e8a23a', '#e8734a'];
+      for (let i = 0; i < 10; i++) {
+        const dot = document.createElement('span');
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 40 + Math.random() * 40;
+        dot.style.setProperty('--fly', `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`);
+        dot.style.background = colors[i % colors.length];
+        dot.style.left = '0px';
+        dot.style.animationDelay = (Math.random() * 0.1) + 's';
+        burst.appendChild(dot);
+      }
+      celebrated.style.position = 'relative';
+      celebrated.appendChild(burst);
+      setTimeout(() => burst.remove(), 1200);
+    }
+    if (window.history.replaceState && window.location.search.includes('celebrate')) {
+      const cleanUrl = window.location.pathname;
+      setTimeout(() => window.history.replaceState({}, '', cleanUrl), 50);
+    }
+  })();
+</script>
+</body>
+</html>
