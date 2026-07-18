@@ -169,6 +169,12 @@
     font-family: inherit;
     background: var(--paper);
   }
+  .time-sep {
+    align-self: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 0 2px;
+  }
   form.add-form button, .upload-form button {
     position: relative;
     overflow: hidden;
@@ -526,7 +532,9 @@
       <form class="add-form" action="{{ url_for('add_task') }}" method="post">
         <input type="text" name="text" placeholder="What do you need to do?" required>
         <input type="date" name="due_date" value="{{ tomorrow }}" min="{{ today }}">
-        <input type="time" name="due_time">
+        <input type="time" name="due_time" title="Start time" aria-label="Start time">
+        <span class="time-sep">–</span>
+        <input type="time" name="end_time" title="End time" aria-label="End time">
         <button type="submit">Add</button>
       </form>
     </div>
@@ -538,7 +546,9 @@
         <form class="upload-form" action="{{ url_for('upload_schedule') }}" method="post" enctype="multipart/form-data">
           <input type="file" name="schedule_file" accept=".pdf,.docx" required>
           <input type="date" name="upload_due_date" value="{{ tomorrow }}" min="{{ today }}">
-          <input type="time" name="upload_due_time">
+          <input type="time" name="upload_due_time" title="Start time" aria-label="Start time">
+          <span class="time-sep">–</span>
+          <input type="time" name="upload_end_time" title="End time" aria-label="End time">
           <button type="submit">Generate tasks</button>
         </form>
       </div>
@@ -581,7 +591,7 @@
                 <div class="task-pie {% if task['done'] %}done{% endif %}" title="{% if task['done'] %}Done{% else %}Pending{% endif %}"></div>
                 <div class="task-info">
                   <span class="task-text {% if task['done'] %}done{% endif %}">{{ task['text'] }}</span>
-                  <span class="task-date">Due {{ task['due_date'] }}{% if task['due_time'] %} · {{ task['due_time'] }}{% endif %}</span>
+                  <span class="task-date">Due {{ task['due_date'] }}{% if task['due_time'] %} · {{ task['due_time'] }}{% if task['end_time'] %}–{{ task['end_time'] }}{% endif %}{% endif %}</span>
                 </div>
               </div>
               <div class="actions">
