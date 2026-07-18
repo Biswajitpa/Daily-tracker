@@ -94,14 +94,19 @@ def init_db():
             text TEXT NOT NULL,
             due_date TEXT NOT NULL,
             due_time TEXT,
+            end_time TEXT,
             done INTEGER NOT NULL DEFAULT 0
         )
     """)
-    # migrate older databases created before due_time existed
+    # migrate older databases created before due_time / end_time existed.
+    # due_time doubles as the task's start time; end_time is the optional
+    # end of an exact scheduled window (e.g. 09:00 - 10:30).
     existing_cols = [row["name"] if not USE_TURSO else row["name"]
                       for row in conn.execute("PRAGMA table_info(tasks)").fetchall()]
     if "due_time" not in existing_cols:
         conn.execute("ALTER TABLE tasks ADD COLUMN due_time TEXT")
+    if "end_time" not in existing_cols:
+        conn.execute("ALTER TABLE tasks ADD COLUMN end_time TEXT")
     conn.commit()
     conn.close()
 
@@ -170,6 +175,7 @@ def upload_schedule():
     file = request.files.get("schedule_file")
     due_date = request.form.get("upload_due_date", "").strip()
     due_time = request.form.get("upload_due_time", "").strip()
+    end_time = request.form.get("upload_end_time", "").strip()
     if not due_date:
         due_date = (date.today() + timedelta(days=1)).isoformat()
 
@@ -194,8 +200,8 @@ def upload_schedule():
         task_text = clean_task_line(raw_line)
         if task_text:
             conn.execute(
-                "INSERT INTO tasks (text, due_date, due_time, done) VALUES (?, ?, ?, 0)",
-                (task_text, due_date, due_time or None),
+                "INSERT INTO tasks (text, due_date, due_time, end_time, done) VALUES (?, ?, ?, ?, 0)",
+                (task_text, due_date, due_time or None, end_time or None),
             )
     conn.commit()
     conn.close()
@@ -208,6 +214,7 @@ def add_task():
     text = request.form.get("text", "").strip()
     due_date = request.form.get("due_date", "").strip()
     due_time = request.form.get("due_time", "").strip()
+    end_time = request.form.get("end_time", "").strip()
 
     if not due_date:
         due_date = (date.today() + timedelta(days=1)).isoformat()
@@ -215,8 +222,8 @@ def add_task():
     if text:
         conn = get_db()
         conn.execute(
-            "INSERT INTO tasks (text, due_date, due_time, done) VALUES (?, ?, ?, 0)",
-            (text, due_date, due_time or None),
+            "INSERT INTO tasks (text, due_date, due_time, end_time, done) VALUES (?, ?, ?, ?, 0)",
+            (text, due_date, due_time or None, end_time or None),
         )
         conn.commit()
         conn.close()
