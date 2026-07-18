@@ -26,16 +26,58 @@
     margin: 0;
     font-family: 'Inter', -apple-system, sans-serif;
     color: var(--ink);
-    background:
-      radial-gradient(circle at 10% -10%, #efe9ff 0%, transparent 45%),
-      radial-gradient(circle at 100% 0%, #ffe9dd 0%, transparent 40%),
-      var(--paper);
+    background: var(--paper);
     min-height: 100vh;
     padding: 48px 16px 80px;
+    position: relative;
+    overflow-x: hidden;
   }
-  .wrap { max-width: 640px; margin: 0 auto; }
+  .bg-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+  }
+  .bg-blob.a {
+    width: 480px; height: 480px;
+    top: -220px; left: -160px;
+    background: radial-gradient(circle, #efe9ff 0%, transparent 70%);
+    animation: drift-a 16s ease-in-out infinite alternate;
+  }
+  .bg-blob.b {
+    width: 420px; height: 420px;
+    top: -140px; right: -160px;
+    background: radial-gradient(circle, #ffe9dd 0%, transparent 70%);
+    animation: drift-b 19s ease-in-out infinite alternate;
+  }
+  @keyframes drift-a {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, 40px) scale(1.08); }
+  }
+  @keyframes drift-b {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-25px, 30px) scale(1.05); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bg-blob { animation: none; }
+  }
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
 
-  .masthead { margin-bottom: 28px; }
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .masthead, .card { animation: rise-in .55s cubic-bezier(.22,1,.36,1) both; }
+  .masthead { margin-bottom: 28px; animation-delay: 0s; }
+  .card:nth-of-type(1) { animation-delay: .05s; }
+  .card:nth-of-type(2) { animation-delay: .12s; }
+  .card:nth-of-type(3) { animation-delay: .19s; }
+  .card:nth-of-type(4) { animation-delay: .26s; }
+  @media (prefers-reduced-motion: reduce) {
+    .masthead, .card { animation: none; }
+  }
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -74,6 +116,11 @@
     padding: 22px;
     margin-bottom: 20px;
     box-shadow: 0 1px 2px rgba(36,34,44,0.02);
+    transition: box-shadow .25s ease, transform .25s ease;
+  }
+  .card:hover {
+    box-shadow: 0 10px 28px rgba(36,34,44,0.07);
+    transform: translateY(-2px);
   }
 
   .section-label {
@@ -109,6 +156,8 @@
     background: var(--paper);
   }
   form.add-form button, .upload-form button {
+    position: relative;
+    overflow: hidden;
     padding: 13px 20px;
     background: var(--violet);
     color: #fff;
@@ -119,6 +168,16 @@
     cursor: pointer;
     transition: transform .12s ease, background .15s ease;
   }
+  form.add-form button::after, .upload-form button::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -60%;
+    width: 40%; height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: skewX(-20deg);
+    transition: left .55s ease;
+  }
+  form.add-form button:hover::after, .upload-form button:hover::after { left: 130%; }
   form.add-form button:hover, .upload-form button:hover {
     background: var(--violet-deep);
     transform: translateY(-1px);
@@ -179,6 +238,11 @@
     font-weight: 600;
     color: var(--violet-deep);
     pointer-events: none;
+    animation: pct-in .6s cubic-bezier(.22,1,.36,1) .3s both;
+  }
+  @keyframes pct-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   }
   .stat-panel-title {
     font-family: 'JetBrains Mono', monospace;
@@ -204,6 +268,10 @@
 
   /* --- task list --- */
   ul { list-style: none; padding: 0; margin: 0; }
+  @keyframes task-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
   li {
     display: flex;
     align-items: center;
@@ -211,10 +279,16 @@
     gap: 10px;
     padding: 14px 4px;
     border-bottom: 1px solid var(--line);
-    transition: background .3s ease;
+    transition: background .3s ease, transform .2s ease;
     border-radius: 10px;
+    animation: task-in .4s cubic-bezier(.22,1,.36,1) both;
   }
   li:last-child { border-bottom: none; }
+  li:hover { background: var(--paper); }
+  li:hover .task-pie { transform: scale(1.08); }
+  @media (prefers-reduced-motion: reduce) {
+    li { animation: none; }
+  }
   .task-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .task-info { display: flex; flex-direction: column; min-width: 0; }
   .task-text {
@@ -377,6 +451,9 @@
 </style>
 </head>
 <body>
+  <div class="bg-blob a"></div>
+  <div class="bg-blob b"></div>
+
   <div id="celebrateToast" class="celebrate-toast">
     <div class="celebrate-check">
       <svg viewBox="0 0 52 52" width="30" height="30">
@@ -439,8 +516,8 @@
         </div>
       </div>
       <div class="legend-row">
-        <div><span class="dot done"></span>Complete: {{ done_pct }}% ({{ done_count }}/{{ total }})</div>
-        <div><span class="dot pending"></span>Pending: {{ pending_pct }}% ({{ pending_count }}/{{ total }})</div>
+        <div><span class="dot done"></span>Complete: <span class="count-up" data-target="{{ done_pct }}">0</span>% ({{ done_count }}/{{ total }})</div>
+        <div><span class="dot pending"></span>Pending: <span class="count-up" data-target="{{ pending_pct }}">0</span>% ({{ pending_count }}/{{ total }})</div>
       </div>
     </div>
     {% endif %}
@@ -452,7 +529,7 @@
       {% else %}
         <ul>
           {% for task in tasks %}
-            <li data-task-id="{{ task['id'] }}" {% if celebrate_id == task['id'] %}class="just-done"{% endif %}>
+            <li data-task-id="{{ task['id'] }}" style="animation-delay: {{ (loop.index0 * 0.045)|round(3) }}s" {% if celebrate_id == task['id'] %}class="just-done"{% endif %}>
               <div class="task-left">
                 <div class="task-pie {% if task['done'] %}done{% endif %}" title="{% if task['done'] %}Done{% else %}Pending{% endif %}"></div>
                 <div class="task-info">
@@ -554,6 +631,23 @@
       const cleanUrl = window.location.pathname;
       setTimeout(() => window.history.replaceState({}, '', cleanUrl), 50);
     }
+  })();
+
+  // gently count up each stat percentage from 0 to its target on load
+  (function () {
+    const els = document.querySelectorAll('.count-up');
+    els.forEach((el) => {
+      const target = parseFloat(el.dataset.target) || 0;
+      const duration = 800;
+      const start = performance.now();
+      function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = (target * eased).toFixed(target % 1 === 0 ? 0 : 1);
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
   })();
 </script>
 </body>
