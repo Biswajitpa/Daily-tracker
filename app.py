@@ -7,11 +7,25 @@ from werkzeug.utils import secure_filename
 from docx import Document as DocxDocument
 from pypdf import PdfReader
 
+# Turso (libSQL) client. Install with: pip install libsql-experimental
+import libsql_experimental as libsql
+
 app = Flask(__name__)
 
 # Vercel's deployment filesystem is read-only except for /tmp, and each
-# serverless invocation may get a fresh /tmp — so data here is NOT permanent
-# on Vercel. Locally (or on a normal server) it behaves like a real file.
+# serverless invocation may get a fresh /tmp — so a local sqlite file is NOT
+# permanent on Vercel. To get real persistence there, point this app at a
+# Turso database instead by setting these two env vars:
+#
+#   TURSO_DATABASE_URL   e.g. libsql://your-db-name-yourorg.turso.io
+#   TURSO_AUTH_TOKEN     the auth token for that database
+#
+# If they aren't set, the app falls back to a local sqlite file, which is
+# fine for local development but won't persist on Vercel.
+TURSO_DATABASE_URL = os.environ.get("TURSO_DATABASE_URL")
+TURSO_AUTH_TOKEN = os.environ.get("TURSO_AUTH_TOKEN")
+USE_TURSO = bool(TURSO_DATABASE_URL)
+
 IS_VERCEL = os.environ.get("VERCEL") == "1"
 DATA_DIR = "/tmp" if IS_VERCEL else os.path.dirname(__file__)
 
@@ -21,7 +35,52 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED_EXTENSIONS = {"pdf", "docx"}
 
 
+def _rows_to_dicts(cursor, rows):
+    """Normalize libsql rows (plain tuples) into dicts so templates can use
+    task['col'] the same way they would with sqlite3.Row."""
+    columns = [d[0] for d in cursor.description]
+    return [dict(zip(columns, row)) for row in rows]
+
+
+class TursoConnection:
+    """Thin wrapper so the rest of the app can keep calling
+    conn.execute(...).fetchall()/.fetchone() and get dict-like rows back,
+    regardless of whether we're talking to Turso or local sqlite."""
+
+    def __init__(self, url, auth_token):
+        self._conn = libsql.connect(url, auth_token=auth_token)
+
+    def execute(self, sql, params=()):
+        cur = self._conn.execute(sql, params)
+        return TursoCursor(cur)
+
+    def commit(self):
+        self._conn.commit()
+
+    def close(self):
+        # libsql_experimental connections don't require explicit closing,
+        # but keep the call symmetrical with sqlite3's API.
+        pass
+
+
+class TursoCursor:
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def fetchall(self):
+        rows = self._cursor.fetchall()
+        return _rows_to_dicts(self._cursor, rows)
+
+    def fetchone(self):
+        row = self._cursor.fetchone()
+        if row is None:
+            return None
+        return _rows_to_dicts(self._cursor, [row])[0]
+
+
 def get_db():
+    if USE_TURSO:
+        return TursoConnection(TURSO_DATABASE_URL, TURSO_AUTH_TOKEN)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -39,7 +98,8 @@ def init_db():
         )
     """)
     # migrate older databases created before due_time existed
-    existing_cols = [row["name"] for row in conn.execute("PRAGMA table_info(tasks)")]
+    existing_cols = [row["name"] if not USE_TURSO else row["name"]
+                      for row in conn.execute("PRAGMA table_info(tasks)").fetchall()]
     if "due_time" not in existing_cols:
         conn.execute("ALTER TABLE tasks ADD COLUMN due_time TEXT")
     conn.commit()
