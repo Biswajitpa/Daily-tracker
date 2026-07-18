@@ -66,15 +66,15 @@
   .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
 
   @keyframes rise-in {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(34px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .masthead, .card { animation: rise-in .55s cubic-bezier(.22,1,.36,1) both; }
+  .masthead, .card { animation: rise-in .75s cubic-bezier(.34,1.56,.64,1) both; }
   .masthead { margin-bottom: 28px; animation-delay: 0s; }
-  .card:nth-of-type(1) { animation-delay: .05s; }
-  .card:nth-of-type(2) { animation-delay: .12s; }
-  .card:nth-of-type(3) { animation-delay: .19s; }
-  .card:nth-of-type(4) { animation-delay: .26s; }
+  .card:nth-of-type(1) { animation-delay: .08s; }
+  .card:nth-of-type(2) { animation-delay: .18s; }
+  .card:nth-of-type(3) { animation-delay: .28s; }
+  .card:nth-of-type(4) { animation-delay: .38s; }
   @media (prefers-reduced-motion: reduce) {
     .masthead, .card { animation: none; }
   }
@@ -106,6 +106,20 @@
     font-size: 40px;
     letter-spacing: -0.01em;
     margin: 6px 0 4px;
+    background: linear-gradient(100deg, var(--ink) 20%, var(--violet) 45%, var(--clay) 60%, var(--ink) 80%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: title-sheen 6s ease-in-out infinite;
+  }
+  @keyframes title-sheen {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    h1 { animation: none; }
   }
   .subtitle { color: var(--ink-soft); font-size: 14.5px; }
 
@@ -116,11 +130,11 @@
     padding: 22px;
     margin-bottom: 20px;
     box-shadow: 0 1px 2px rgba(36,34,44,0.02);
-    transition: box-shadow .25s ease, transform .25s ease;
+    transition: box-shadow .3s ease, transform .3s cubic-bezier(.22,1,.36,1);
   }
   .card:hover {
-    box-shadow: 0 10px 28px rgba(36,34,44,0.07);
-    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(91,77,224,0.14), 0 4px 10px rgba(36,34,44,0.06);
+    transform: translateY(-5px) scale(1.008);
   }
 
   .section-label {
@@ -166,23 +180,36 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform .12s ease, background .15s ease;
+    transition: transform .15s cubic-bezier(.34,1.56,.64,1), background .15s ease, box-shadow .3s ease;
+    animation: btn-glow 3.2s ease-in-out infinite;
+  }
+  @keyframes btn-glow {
+    0%, 100% { box-shadow: 0 0 0 rgba(91,77,224,0); }
+    50%      { box-shadow: 0 0 18px rgba(91,77,224,0.45); }
   }
   form.add-form button::after, .upload-form button::after {
     content: "";
     position: absolute;
     top: 0; left: -60%;
     width: 40%; height: 100%;
-    background: linear-gradient(115deg, transparent, rgba(255,255,255,0.35), transparent);
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,0.45), transparent);
     transform: skewX(-20deg);
     transition: left .55s ease;
   }
   form.add-form button:hover::after, .upload-form button:hover::after { left: 130%; }
   form.add-form button:hover, .upload-form button:hover {
     background: var(--violet-deep);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.04);
   }
-  form.add-form button:active, .upload-form button:active { transform: translateY(0); }
+  form.add-form button:active, .upload-form button:active { transform: translateY(0) scale(0.94); }
+  .upload-form button { animation-name: btn-glow-moss; }
+  @keyframes btn-glow-moss {
+    0%, 100% { box-shadow: 0 0 0 rgba(31,157,120,0); }
+    50%      { box-shadow: 0 0 18px rgba(31,157,120,0.4); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    form.add-form button, .upload-form button { animation: none; }
+  }
 
   .upload-box {
     background: linear-gradient(180deg, #fbfaf6, var(--paper));
@@ -331,13 +358,28 @@
     height: 28px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: conic-gradient(var(--amber) 0%, var(--paper-deep) 0%);
     border: 1.5px solid var(--line);
     position: relative;
-    transition: transform .3s ease;
+    overflow: hidden;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .task-pie::before {
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 50%;
+    background: conic-gradient(var(--amber) 0deg 110deg, var(--paper-deep) 110deg 360deg);
+  }
+  .task-pie:not(.done)::before {
+    animation: pie-spin 2.4s linear infinite;
+  }
+  @keyframes pie-spin {
+    to { transform: rotate(360deg); }
+  }
+  .task-pie.done::before {
+    background: conic-gradient(var(--moss) 100%, transparent 0);
   }
   .task-pie.done {
-    background: conic-gradient(var(--moss) 100%, transparent 0);
     border-color: var(--moss);
   }
   .task-pie::after {
@@ -347,11 +389,15 @@
     border-radius: 50%;
     background: var(--card);
   }
-  li.just-done .task-pie { animation: pie-pop .5s ease; }
+  li.just-done .task-pie { animation: pie-pop .7s cubic-bezier(.34,1.56,.64,1); }
   @keyframes pie-pop {
-    0% { transform: scale(1); }
-    45% { transform: scale(1.3); }
-    100% { transform: scale(1); }
+    0%   { transform: scale(1) rotate(0deg); }
+    40%  { transform: scale(1.55) rotate(15deg); }
+    70%  { transform: scale(0.9) rotate(-6deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .task-pie:not(.done) { animation: none; }
   }
 
   /* --- celebration animation on a just-completed task --- */
@@ -407,13 +453,14 @@
     pointer-events: none;
   }
   .celebrate-toast.show {
-    animation: toast-in-out 2.6s cubic-bezier(.22,1,.36,1) forwards;
+    animation: toast-in-out 2.8s cubic-bezier(.34,1.56,.64,1) forwards;
   }
   @keyframes toast-in-out {
-    0%   { transform: translate(-50%, -140%); opacity: 0; }
-    12%  { transform: translate(-50%, 0%); opacity: 1; }
-    82%  { transform: translate(-50%, 0%); opacity: 1; }
-    100% { transform: translate(-50%, -140%); opacity: 0; }
+    0%   { transform: translate(-50%, -140%) scale(0.85); opacity: 0; }
+    14%  { transform: translate(-50%, 6%) scale(1.05); opacity: 1; }
+    22%  { transform: translate(-50%, 0%) scale(1); opacity: 1; }
+    82%  { transform: translate(-50%, 0%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -140%) scale(0.9); opacity: 0; }
   }
   .celebrate-check {
     width: 40px; height: 40px;
@@ -613,19 +660,23 @@
       const burst = document.createElement('div');
       burst.className = 'confetti-burst';
       const colors = ['#1f9d78', '#5b4de0', '#e8a23a', '#e8734a'];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 20; i++) {
         const dot = document.createElement('span');
         const angle = Math.random() * Math.PI * 2;
-        const dist = 40 + Math.random() * 40;
+        const dist = 55 + Math.random() * 70;
+        const size = 5 + Math.random() * 5;
+        dot.style.width = size + 'px';
+        dot.style.height = size + 'px';
         dot.style.setProperty('--fly', `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`);
         dot.style.background = colors[i % colors.length];
         dot.style.left = '0px';
-        dot.style.animationDelay = (Math.random() * 0.1) + 's';
+        dot.style.animationDuration = (0.8 + Math.random() * 0.5) + 's';
+        dot.style.animationDelay = (Math.random() * 0.12) + 's';
         burst.appendChild(dot);
       }
       celebrated.style.position = 'relative';
       celebrated.appendChild(burst);
-      setTimeout(() => burst.remove(), 1200);
+      setTimeout(() => burst.remove(), 1500);
     }
     if (window.history.replaceState && window.location.search.includes('celebrate')) {
       const cleanUrl = window.location.pathname;
