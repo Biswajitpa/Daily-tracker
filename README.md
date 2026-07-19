@@ -195,3 +195,13 @@ If `TURSO_DATABASE_URL` isn't set, the app transparently falls back to local SQL
 - [ ] Multi-user auth (Turso supports per-user databases well for this)
 - [ ] Calendar/week view in addition to the flat list
 - [ ] Push/email reminders around `due_time`
+
+---
+
+## About the developer
+
+**Daybook** is designed and built by **Biswajit Patnaik** — from the database layer and Vercel deployment setup to every animation and micro-interaction in the interface. What started as a simple to-do list grew, piece by piece, into a genuinely thoughtful little productivity tool: smart document-to-task parsing, a resilient dual-database architecture for serverless persistence, and an interface crafted with real attention to detail and delight.
+
+Thanks for checking out the project — feel free to explore the code, open an issue, or reach out with ideas.
+
+<p align="right"><i>Built with care by Biswajit Patnaik 💜</i></p>
