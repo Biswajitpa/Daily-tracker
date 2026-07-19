@@ -1,0 +1,75 @@
+<svg width="900" height="200" viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f6f4ee"/>
+      <stop offset="100%" stop-color="#efece2"/>
+    </linearGradient>
+
+    <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#24222c"/>
+      <stop offset="35%" stop-color="#5b4de0"/>
+      <stop offset="55%" stop-color="#e8734a"/>
+      <stop offset="100%" stop-color="#24222c"/>
+      <animateTransform attributeName="gradientTransform" type="translate"
+        values="-1 0; 1 0; -1 0" dur="6s" repeatCount="indefinite" additive="sum"/>
+    </linearGradient>
+
+    <filter id="blur1"><feGaussianBlur stdDeviation="28"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="24"/></filter>
+
+    <clipPath id="revealClip">
+      <rect x="0" y="0" width="0" height="40">
+        <animate attributeName="width" from="0" to="430" dur="1.8s" begin="0.4s" fill="freeze"/>
+      </rect>
+    </clipPath>
+  </defs>
+
+  <rect width="900" height="200" rx="20" fill="url(#bg)"/>
+
+  <circle cx="90" cy="30" r="140" fill="#efe9ff" filter="url(#blur1)" opacity="0.7">
+    <animate attributeName="cx" values="90;140;90" dur="9s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="30;70;30" dur="11s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="820" cy="170" r="130" fill="#ffe9dd" filter="url(#blur2)" opacity="0.7">
+    <animate attributeName="cx" values="820;770;820" dur="10s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="170;130;170" dur="8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- floating confetti dots -->
+  <g opacity="0.85">
+    <circle r="4" fill="#1f9d78">
+      <animateMotion path="M 60,180 C 65,120 70,60 60,10" dur="5s" begin="0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="5s" begin="0s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="3.5" fill="#e8a23a">
+      <animateMotion path="M 830,190 C 825,130 835,70 828,15" dur="6s" begin="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="6s" begin="0.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="3" fill="#5b4de0">
+      <animateMotion path="M 760,185 C 755,140 765,90 758,40" dur="7s" begin="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="7s" begin="1.6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- pulsing status dot, matching the app's eyebrow marker -->
+  <circle cx="66" cy="66" r="5" fill="#e8734a">
+    <animate attributeName="r" values="5;8;5" dur="2.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.5;1" dur="2.4s" repeatCount="indefinite"/>
+  </circle>
+  <text x="82" y="71" font-family="Menlo, 'JetBrains Mono', monospace" font-size="13"
+        letter-spacing="2" fill="#3f31b8">TODAY'S DAYBOOK</text>
+
+  <!-- animated gradient title -->
+  <text x="60" y="130" font-family="Georgia, 'Fraunces', serif" font-size="56"
+        font-weight="700" fill="url(#titleGrad)">Daybook</text>
+
+  <!-- typewriter-revealed subtitle -->
+  <g clip-path="url(#revealClip)">
+    <text x="62" y="164" font-family="Menlo, 'JetBrains Mono', monospace" font-size="16"
+          fill="#6f6c7c">Add tasks, upload a schedule, watch the pile shrink.</text>
+  </g>
+  <rect x="60" y="150" width="2.5" height="19" fill="#5b4de0">
+    <animate attributeName="x" from="60" to="490" dur="1.8s" begin="0.4s" fill="freeze"/>
+    <animate attributeName="opacity" values="1;0;1" dur="0.8s" begin="2.2s" repeatCount="indefinite"/>
+  </rect>
+</svg>
